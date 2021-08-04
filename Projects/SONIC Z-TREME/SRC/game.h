@@ -2,7 +2,7 @@
 #define GAME_H
 
 extern int mapId;
-
+bool IsZoom;
 void    ztReset(player_t *currentPlayer);
 void    ztLoadPermanentAssets(Uint32 nbPlayers);
 void    playerHurt(player_t * currentPlayer, bool autodeath);

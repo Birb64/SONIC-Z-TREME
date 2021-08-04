@@ -22,7 +22,7 @@ void ztReset(player_t *currentPlayer)
     camera_t * curCam;
     if (currentPlayer->PLAYER_ID==0)
     {
-        slPrint("SONIC Z-TREME SAGE 2018 DEMO (v.0.0813)" , slLocate(3,0));
+        slPrint("SONIC RINGWORLDS (v0.0004)[z-treme]" , slLocate(3,0));
         slPrint("LIVES : " , slLocate(0,26));
         //slPrint("¬¢¤²¬£@±*³¼½¾", slLocate(5,1));
         curCam=&cam1;
@@ -71,8 +71,8 @@ void ztReset(player_t *currentPlayer)
     curCam->pos[X]=currentPlayer->POSITION[X];
     curCam->pos[Y]=currentPlayer->POSITION[Y];
     curCam->pos[Z]=currentPlayer->POSITION[Z];
-    curCam->yOffset=-toFIXED(80.0);
-    curCam->camDist=toFIXED(50.0);
+    curCam->yOffset=-toFIXED(20.0);
+    curCam->camDist=toFIXED(0.0);
     curCam->camAngle[X]=0;
     curCam->camAngle[Y]=0;
     curCam->camAngle[Z]=0;
@@ -91,7 +91,7 @@ char * ztMapNameLookUp(int lvl)
     if (mapId>3)mapId=1;
 
 
-        if (mapId==1) filename = "JADE1.ZTM";
+        if (mapId==1) filename = "TEST.ZTM";
         else if (mapId==2) filename = "RED.ZTM";//"CRYST2.ZTM";
         //else if (mapId==3) filename = "GALAXY.ZTM";
         else if (mapId==3) filename = "TEST5.ZTM";
@@ -101,7 +101,7 @@ char * ztMapNameLookUp(int lvl)
 
 
     Uint16 cmode;
-    if (filename == "JADE1.ZTM" || filename == "JADE1.LQ" || filename == "PEACH.ZTM")
+    if (filename == "JADE1.ZTM" || filename == "JADE1.LQ" || filename == "PEACH.ZTM" || filename == "GALAXY.ZTM")
         cmode=ztLoadVDP2bmp("BG", "CRYSTBG.ZTI", (Uint16 *)VDP2_VRAM_A1, 0, bmNBG1);
         //cmode=ztLoadVDP2bmp("BG", "JADEBG.ZTI", (Uint16 *)VDP2_VRAM_A0, 0, bmNBG1);
     else if (filename == "CRYST2.ZTM" || filename == "CRYST2.LQ")
@@ -234,8 +234,8 @@ void ztLoadPermanentAssets(Uint32 nbPlayers)
 
           //  entities[0]=entities[2];
     //entities[1]=entities[0];
-        //currentAddress = ztLoad3Dmodel((Sint8*)"TAILS.ZTP", currentAddress, &entities[1], 1);
-        //currentAddress = ztLoad3Dmodel((Sint8*)"TAILS.ZTP", currentAddress, &entities[2], 1);
+        //currentAddress = ztLoad3Dmodel((Sint8*)"TAILS.ZTP", currentAddress, &entities[4], 1);
+        //currentAddress = ztLoad3Dmodel((Sint8*)"TAILS.ZTP", currentAddress, &entities[5], 4);
         //currentAddress = ztLoad3Dmodel((Sint8*)"SONIC.ZTP", currentAddress, &entities[2], 1);
     }
     ztCDsetRoot();
@@ -552,6 +552,7 @@ void update_animations(player_t * currentPlayer)
         ztUpdateAnimation(&currentPlayer->ANIM_CTRL, curEntity);
 }
 
+
 void playerHurt(player_t * currentPlayer, bool autodeath)
 {
     if (currentPlayer->INVINCIBLE > 0 && autodeath==0) return;
@@ -680,17 +681,17 @@ void updatePosition(player_t * currentPlayer)
 
 */
 
-
-#define MIN_Y (-50<<16)
-#define MAX_Y (-0<<16)
+bool IsZoom;
+#define MIN_Y (-24<<16) //-50<<16
+#define MAX_Y (-0<<16) //-0<<16
 /*#define camDefaultOffset    (DEGtoANG(24.0))
 #define camMaxOffset        (DEGtoANG(40.0))*/
 void update_camera(player_t * currentPlayer, camera_t * currentCam)
 {
 
     ANGLE dif = currentCam->targetAngle - currentCam->camAngle[Y];
-    if (dif > DEGtoANG(5.5))
-        currentCam->camAngle[Y] += 540*ZT_FRAMERATE;
+    if (dif > DEGtoANG(5.5)) //5.5
+        currentCam->camAngle[Y] += 540*ZT_FRAMERATE; //540
     else if (dif < -DEGtoANG(5.5))
         currentCam->camAngle[Y] -= 540*ZT_FRAMERATE;
     else
@@ -711,7 +712,28 @@ void update_camera(player_t * currentPlayer, camera_t * currentCam)
     }
 
     currentCam->pos[Y]=currentPlayer->POSITION[Y]-(80<<16);
-    if (currentCam->camDist < toFIXED(300.0)) currentCam->camDist+= toFIXED(2.0)*ZT_FRAMERATE;
+
+    switch (IsZoom)
+    {
+    case true:
+
+        switch (currentCam->camDist < toFIXED(150))
+        {
+        case false:
+            currentCam->camDist -= toFIXED(2.0) * ZT_FRAMERATE;
+            break;
+        }
+        
+        break;
+    case false:
+        switch (currentCam->camDist > toFIXED(300))
+        {
+        case false:
+            currentCam->camDist += toFIXED(2.0) * ZT_FRAMERATE;
+           break;
+        }
+        break;
+    }
 
     currentCam->camAngle[Z]=slAtan(currentCam->camDist, currentPlayer->POSITION[Y]-currentCam->pos[Y]-currentCam->yOffset);
 
@@ -737,6 +759,15 @@ void update_physics(player_t * currentPlayer)
     updatePosition(currentPlayer);
     update_camera(currentPlayer, currentCam);
     update_animations(currentPlayer);
+    /*switch (currentPlayer->INVINCIBLE) 
+    {
+    case true:
+        player_t Ring;
+        Ring->ROTATION[X] += Ring->SPEED[X] = currentPlayer->ROTATION[X] * toFIXED(2);
+        Ring->ROTATION[Y] += Ring->SPEED[Y] = currentPlayer->ROTATION[Y] * toFIXED(2) + toFIXED(5);
+        Ring->ROTATION[Z] += Ring->SPEED[Z] = currentPlayer->ROTATION[Z] * toFIXED(2);
+        break;
+    }*/ //rings
     if (currentPlayer->INVINCIBLE>0) currentPlayer->INVINCIBLE-=ZT_FRAMERATE;
     if (currentPlayer->INVINCIBLE<0) currentPlayer->INVINCIBLE=0;
 
@@ -749,8 +780,25 @@ void update_physics(player_t * currentPlayer)
 void main_loop(Uint32 nbPlayers)
 {
     if (PLAYER_1.STATUS & IS_DYING) ztReset(&PLAYER_1);
-
-    if (nbPlayers > 1)
+    switch (nbPlayers > 1)
+    {
+    case true:
+        if (PLAYER_2.STATUS & IS_DYING) ztReset(&PLAYER_2);
+        //update_physics(&PLAYER_2, nbPlayers);
+        slCurWindow(winFar);
+        //computeLight();
+        ztRender(&PLAYER_2, &cam2, nbPlayers);
+        update_physics(&PLAYER_2); //slSlaveFunc(update_physics, &PLAYER_2);
+        slCurWindow(winNear);
+        break;
+    case false:
+        slCurWindow(winFar);
+        ztSetScaledSprite(-80, -56, 159, 111, ((1 << 11) | SPdis | CL_Replace | CL16Bnk | ECenb),
+            (0xFFE0), 0, ((0x100) | 1), _ZmLT, toFIXED(3000)); //Clear the scaled frame buffer
+        slCurWindow(winNear);
+        break;
+    }
+    /*if (nbPlayers > 1)
     {
         if (PLAYER_2.STATUS & IS_DYING) ztReset(&PLAYER_2);
         //update_physics(&PLAYER_2, nbPlayers);
@@ -766,7 +814,7 @@ void main_loop(Uint32 nbPlayers)
         ztSetScaledSprite(-80, -56, 159, 111, ((1<<11) | SPdis | CL_Replace | CL16Bnk | ECenb),
                           (0xFFE0), 0, ((0x100)| 1), _ZmLT, toFIXED(3000)); //Clear the scaled frame buffer
         slCurWindow(winNear);
-    }
+    }*/
 
 //computeLight();
     ztRender(&PLAYER_1, &cam1, nbPlayers);
