@@ -139,6 +139,6 @@ So that I might be able to make a mod for blender that would add icons and such 
 I'm also hoping to make those icons as fun as they were in the SS.PC.
 Anyways, that was a reqiuem of unity ringworlds.
 
-# The future
+# The future [Birb64]
 When this game finally releases, I'm gonna be going off and becoming an engineer.
 It's definitely gonna be a gradual change, but none-the-less, I plan to leave this project as soon as it's perfectly enjoyable to audiences around the hemispheres
